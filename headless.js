@@ -3,6 +3,7 @@ const net = require( "net" );
 const process = require( "process" );
 
 const port = process.argv[2] ?? 9222;
+const userDataDir = process.argv[3];
 
 const portInUse = function( port, callback ) {
 	var server = net.createServer( function( socket ) {
@@ -25,10 +26,14 @@ portInUse( port, function( inUse ) {
 		console.log( "Port(" + port + ") is already in use." );
 		process.exit( 1 );
 	} else {
-		puppeteer.launch( {
+		const options = {
 			executablePath: "/usr/bin/chromium-browser",
-			args: [ "--remote-debugging-port=9222" ]
-		} ).then( browser => {
+			args: [ "--remote-debugging-port=" + port ]
+		};
+		if ( userDataDir )
+			options.args.push( "--user-data-dir=" + userDataDir );
+
+		puppeteer.launch( options ).then( browser => {
 			if ( browser )
 				console.log( "Browser started." );
 			else {
